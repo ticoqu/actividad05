@@ -1,71 +1,39 @@
-# Actividad 3: Crear una máquina virtual básica con Cloud-Init
+# Actividad 5: Despliegue de 3 máquinas con recursos diferenciados
 
 ## Descripción
-Aquí crearás una máquina virtual simple usando Terraform y un archivo cloud-init para configuraciones iniciales.
+Usarás Terraform para desplegar tres máquinas: una master y dos workers, cada una con configuraciones de CPU, memoria y discos diferentes.
 
 ## Requisitos
 - Terraform instalado.
 - Plantilla `debian-12-qcow2-template` en Proxmox.
 
 ### 🎯 Objetivo
-Desplegar una máquina virtual básica en Proxmox usando Terraform y Cloud-Init.
+Desplegar tres máquinas virtuales con distintos tipos (master y workers) y recursos asignados dinámicamente.
 
 ### Entrega
-- Captura de pantalla del estado final de terraform apply.
-- Comprobar acceso por SSH a la VM.
+- Archivos tf
+- Mostrar capturas de las máquinas creadas en Proxmox.
+- Verificar los recursos asignados (memoria, CPU, discos).
 
 ## Pasos a seguir
 
-1. **Crear el archivo `main.tf`**
+1. **Reutiliza los archivos anteriores**: `main.tf`, `variables.tf`, `terraform.tfvars`.
+
+2. **Verifica el contenido de `terraform.tfvars`**
+   Asegúrate de que tenga:
    ```hcl
-      resource "proxmox_vm_qemu" "vm_basica" {
-     name        = "vm-basica"
-     desc        = "VM básica con cloud-init"
-     clone       = "debian-12-qcow2-template"
-     cores       = 2
-     sockets     = 1
-     memory      = 2048
-     scsihw      = "virtio-scsi-pci"
-     agent       = 1
-     qemu_os     = "l26"
-     ciuser      = "automatizacion"
-     cipassword  = "$6$xRwIN4XsEB.mf0"
-     searchdomain = "agetic.gob.bo"
-     nameserver  = "8.8.8.8"
-     ipconfig0   = "ip=192.168.1.10/24,gw=192.168.1.1"
+   cluster_psql = [
+     { name = "master-psql", ip = "192.168.1.20", target = "pve", type = "master" },
+     { name = "worker-psql1", ip = "192.168.1.21", target = "pve", type = "worker" },
+     { name = "worker-psql2", ip = "192.168.1.22", target = "pve", type = "worker" }
+   ]
 
-     disks {
-       virtio {
-         virtio0 {
-           disk {
-             storage = "vol1"
-             size    = "8G"
-           }
-         }
-       }
-       ide {
-         ide2 {
-           cloudinit {
-             storage = "vol1"
-           }
-         }
-       }
-     }
-
-     network {
-       model  = "virtio"
-       bridge = "vmbr0"
-       mtu    = 0
-     }
-   }
-   ```
-
-2. **Verificar tareas**
+3. **Verificar tareas**
    ```bash
    terraform plan
    ```
    
-2. **Ejecutar el despliegue**
+4. **Ejecutar el despliegue**
    ```bash
    terraform apply
    ```
